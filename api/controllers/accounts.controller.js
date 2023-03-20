@@ -28,15 +28,19 @@ exports.signin = async (req, res, next) => {
 
 		console.log(email, 'email');
 		console.log(accountPassword, 'accountPassword');
-		const user = await Accounts.findOne({
+		const account = await Accounts.findOne({
 			email: email,
 			accountPassword: accountPassword,
 		});
-		console.log(user, 'user');
-		if (user) {
+
+		account.updatedAt = Date.now();
+		await account.save();
+		// user.save();
+		console.log(account, 'account');
+		if (JSON.stringify(account) !== '{}') {
 			const temp = {
-				email: user.email,
-				_id: user._id,
+				email: account.email,
+				_id: account._id,
 			};
 			res.send(temp);
 		} else {

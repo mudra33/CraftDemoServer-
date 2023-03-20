@@ -2,7 +2,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
-const { createJWT, verifyToken } = require('../services/auth.service');
+const {
+	createJWT,
+	verifyToken,
+	checkUserAccess,
+} = require('../services/auth.service');
+const { usersService } = require('../services');
 
 router.post('/register', async (req, res) => {
 	let { userName, password } = req.body;
@@ -105,6 +110,27 @@ router.post('/login', async (req, res) => {
 router.post('/getallusers', async (req, res) => {
 	try {
 		const users = await User.find();
+		res.send(users);
+	} catch (error) {
+		return res.status(400).json({ message: error });
+	}
+});
+
+router.patch('/updateuser/:username', async (req, res) => {
+	const users = await usersService.updateUsersByUserName(
+		req.params.username,
+		req.body
+	);
+	res.send({
+		message: 'Users Details Updated Successfully',
+		data: users,
+	});
+});
+
+router.get('/getuser/:username', checkUserAccess, async (req, res) => {
+	try {
+		const users = await usersService.getUserDetails(req.params.username);
+		console.log(users, 'Users');
 		res.send(users);
 	} catch (error) {
 		return res.status(400).json({ message: error });
